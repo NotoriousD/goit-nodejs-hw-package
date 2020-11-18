@@ -64,7 +64,8 @@ exports.updateContacts = async (req, res, next) => {
     });
 
     res.status(200).json({ message: 'Contact has been changed' });
-  } catch (err) {
+
+  } catch (err) {z
     next(err);
   }
 };
