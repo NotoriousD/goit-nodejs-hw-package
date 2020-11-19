@@ -3,7 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const contactRouter = require('./contacts/contact.routers');
+/* const contactRouter = require('./contacts/contact.routers'); */
+const userRouter = require('./user/user.routers');
 const usersRouter = require('./users/users.routers');
 
 const DB_URL = `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.9g6qk.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
@@ -37,12 +38,14 @@ class Server {
   }
 
   initRoutes() {
-    this.server.use('/api', contactRouter);
-    this.server.use('/auth', usersRouter);
+    /* this.server.use('/api', contactRouter); */
+    this.server.use('/auth', userRouter);
+    this.server.use('/users', usersRouter);
   }
 
   initMiddlewares() {
     this.server.use(cors());
+    this.server.use(express.static('public'));
     this.server.use(express.json());
     this.server.use(morgan('dev'));
   }
