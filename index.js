@@ -1,31 +1,57 @@
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+require('dotenv').config();
+const router = require('./contacts/contact.routers')
 
+const DB_URL = `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.9g6qk.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
 
-const contacts = require('./contacts');
+const PORT = process.env.PORT || 3000;
 
-const argv = require('yargs').argv;
+class Server {
+    constructor() {
+        this.server = null;
+    }
 
-// TODO: рефакторить
-function invokeAction({ action, id, name, email, phone }) {
-  switch (action) {
-    case 'list':
-      contacts.listContacts();
-      break;
+    startServer(){
+        this.mongoDBConnection();
+        this.initMiddlewares();
+        this.initRoutes();
+        this.listenServer();
+    }
 
-    case 'get':
-      contacts.getContactById(id)
-      break;
+    async mongoDBConnection() {
+        try{
+            this.server = express();
+            await mongoose.connect(DB_URL, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            });
+            console.log("Database connection successful")
+        }catch(err){
+            console.log("Connection failed");
+            process.exit(1);
+        }
+    }
 
-    case 'add':
-      contacts.addContact(name, email, phone);
-      break;
+    initRoutes(){
+        this.server.use('/api', router);
+    }
 
-    case 'remove':
-      contacts.removeContact(id)
-      break;
+    initMiddlewares() {
+        this.server.use(cors());
+        this.server.use(express.json());
+        this.server.use(morgan("dev"));
+    }
 
-    default:
-      console.warn('\x1B[31m Unknown action type!');
-  }
+    listenServer() {
+        this.server.listen(PORT, () => {
+            console.log(`Server is listening on port ${PORT}`)
+        })
+    }
+    
 }
 
-invokeAction(argv);
+const server = new Server();
+server.startServer();
